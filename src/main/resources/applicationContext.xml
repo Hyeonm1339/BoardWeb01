@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xmlns:tx="http://www.springframework.org/schema/tx"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+   
+   <!-- 스프링 데이터베이스 설정-->
+   <!-- 프로퍼티스 파일에 설정된 프로퍼티 정보 엘리먼트 등록 -->
+   <context:property-placeholder
+      location="classpath:config/database.properties" />
+
+   <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+      <property name="driverClassName" value="${jdbc.driver}"></property>
+      <property name="url" value="${jdbc.url}"></property>
+      <property name="username" value="${jdbc.username}"></property>
+      <property name="password" value="${jdbc.password}"></property>
+   </bean>
+   
+   <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+      <property name="dataSource" ref="dataSource"></property>
+   </bean>
+   
+   <!--트랜잭션 빈생성 -->
+   <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+         <property name="dataSource" ref="dataSource"/>
+   </bean>
+   
+   
+   <tx:advice id="txAdvice" transaction-manager="txManager">
+      <tx:attributes>
+            <tx:method name="get" read-only="true"/>
+            <!-- 모든 대상을 상대로 -->
+            <tx:method name="*"/>
+      </tx:attributes>
+   </tx:advice>
+   
+   <!-- 트랜잭션 aop  -->
+   <aop:config>
+      <aop:pointcut expression="execution(* com.springbook.biz..*Impl.*(..))" id="txPointcut"/>
+      <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
+   </aop:config>
+   
+   <!-- 의존주입 -->
+   <context:component-scan base-package="com.springbook.biz"></context:component-scan>
+   <!-- AOP -->
+   <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+   
+<!--    <bean id="log" class="com.springbook.biz.common.LogAdvice"> -->
+<!--    </bean> -->
+   
+<!--    <bean id="before" class="com.springbook.biz.common.beforeAdvice"></bean> -->
+   
+<!--    <bean id="afterReturning" class="com.springbook.biz.common.AfterReturningAdvice"></bean>    -->
+      
+<!--    <bean id="AfterThrowingAdvice" class="com.springbook.biz.common.afterThrowingAdvice"></bean> -->
+
+<!--    <bean id="AfterAdvice" class="com.springbook.biz.common.AfterAdvice"></bean> -->
+
+<!--       <bean id="Aroud" class="com.springbook.biz.common.AroundAdvice"></bean> -->
+      
+<!--       <aop:pointcut expression="execution(* com.springbook.biz..*Impl.*(..))" id="allPointcut"/> -->
+<!--       <aop:pointcut expression="execution(* com.springbook.biz..*Impl.get*(..))" id="getPointcut"/> -->
+         
+         
+         
+         <!-- 실행 이전에 -->
+<!--       <aop:aspect ref="AfterThrowingAdvice"> -->
+<!--          <aop:before method="before()" pointcut-ref="allPointcut"/> -->
+         
+         <!-- 리턴이 일어난 후에  -->
+<!--          <aop:after-returning method="afterLog()" pointcut-ref="getPointcut"/> -->
+         
+         <!-- 예외처리가 일어난 후에 -->
+<!--          <aop:after-throwing method="exceptionLog" pointcut-ref="allPointcut"/> -->
+<!--       </aop:aspect> -->
+         
+         <!-- 실행 이후에 -->
+<!--       <aop:aspect ref="AfterAdvice"> -->
+<!--          <aop:after method="finallyLog" pointcut-ref="allPointcut"/> -->
+<!--       </aop:aspect> -->
+
+<!--       <aop:aspect ref="Aroud"> -->
+<!--          <aop:around method="aroundLog" pointcut-ref="getPointcut" /> -->
+<!--       </aop:aspect> -->
+   
+      
+   <!-- 오토와이어드 쓰면 이거 안써도댐 -->
+<!--    <bean id="userService" class="com.springbook.biz.user.impl.UserServiceImpl"> -->
+<!--       <property name="userDAO" ref="userDAO"></property> -->
+<!--    </bean> -->
+   
+<!--    <bean id="userDAO" class="com.springbook.biz.user.impl.UserDAO"></bean> -->
+   
+<!--    <context:component-scan base-package="polymorphism"></context:component-scan> -->
+   
+   <!-- <bean id="samsungTV" class="polymorphism.SamsungTV" >scope="prototype"
+      <constructor-arg ref="apple"></constructor-arg>
+      <constructor-arg value="270000"></constructor-arg>
+
+      <property name="speaker" ref="apple"></property>
+      <property name="price" value="27000"></property>
+   </bean> 
+   <bean id="lgTV" class="polymorphism.LgTV">
+   </bean>
+   
+   <bean id="sony" class="polymorphism.SonySpeaker">
+   </bean>
+   
+   <bean id="apple" class="polymorphism.AppleSpeaker">
+   </bean>
+   
+   <bean id="collectionBean" class="com.springbook.ioc.injection.CollectionBean">
+      <property name="addressList">
+         <list>
+            <value>서울 강남구</value>
+            <value>서울시 영등포구</value>
+         </list>
+            <set value-type="java.lang.String">
+               <value>서울시 강남구</value>
+               <value>서울시 영등포구</value>
+            </set>
+            <map>
+               <entry>
+                  <key><value>고길동</value></key>
+                  <value>서울시 강남구</value>
+               </entry>
+               <entry>
+                  <key><value>홍길동</value></key>
+                  <value>서울시 영등포구</value>
+               </entry>
+            </map>
+               <props>
+                  <prop key="고길동">서울시 강남구</prop>
+                  <prop key="홍길동">서울시 영등포구</prop>
+               </props>
+      </property>
+   </bean> -->
+   
+</beans>
